@@ -21,32 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mook.locker.exception;
+package com.soybean.locker.annotation;
 
-/**
- * Created by wyx on 2016/6/1.
- */
-public class UncachedMapperException extends Exception {
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
+@Documented
+public @interface VersionLocker {
 	
-	private static final long serialVersionUID = -3239029321039349523L;
+	// Plugin intercepte update method by default, but except marked by @VersionLocker(false)
 
-	public UncachedMapperException() {
-        super();
-    }
-
-    public UncachedMapperException(String message) {
-        super(message);
-    }
-
-    public UncachedMapperException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public UncachedMapperException(Throwable cause) {
-        super(cause);
-    }
-
-    protected UncachedMapperException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
+	/**
+	 * 修改默认值为false
+	 * @return
+	 */
+	boolean value() default false;
 }

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mook.locker.util;
+package com.soybean.locker.util;
 
 import java.lang.reflect.Proxy;
 

@@ -21,13 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mook.locker.interceptor;
+package com.soybean.locker.interceptor;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import com.soybean.locker.annotation.VersionLocker;
+import com.soybean.locker.util.Constent;
+import com.soybean.locker.util.PluginUtil;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -48,10 +51,6 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeException;
 import org.apache.ibatis.type.TypeHandler;
 
-import com.mook.locker.annotation.VersionLocker;
-import com.mook.locker.util.Constent;
-import com.mook.locker.util.PluginUtil;
-
 /**
  * <p>MyBatis乐观锁插件<br>
  * <p>MyBatis Optimistic Locker Plugin<br>
@@ -70,11 +69,16 @@ public class OptimisticLocker implements Interceptor {
 	
 	private static final Log log = LogFactory.getLog(OptimisticLocker.class);
 	private Properties props = null;
-	
+
+	/**
+	 * 拦截
+	 * @param invocation 调用
+ 	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object intercept(Invocation invocation) throws Exception {
-		
 		String versionColumn;
 		if(null == props || props.isEmpty()) {
 			versionColumn = "version";
@@ -93,14 +97,33 @@ public class OptimisticLocker implements Interceptor {
 			if(null != vl && !vl.value()) {
 				return invocation.proceed();
 			}
-			
+
+//			String originalSql = (String) hm.getValue("boundSql.sql");
+//			StringBuilder builder = new StringBuilder(originalSql);
+//			builder.append(" AND ");
+//			builder.append(versionColumn);
+//			builder.append(" = ?");
+//			hm.setValue("boundSql.sql", builder.toString());
+
+			/**
+			 * new start
+			 */
 			String originalSql = (String) hm.getValue("boundSql.sql");
-			StringBuilder builder = new StringBuilder(originalSql);
-			builder.append(" AND ");
-			builder.append(versionColumn);
-			builder.append(" = ?");
-			hm.setValue("boundSql.sql", builder.toString());
-			
+			System.out.println("**********原始Sql********** = [" + originalSql + "]");
+			String beforeWhereSql = originalSql.toLowerCase().split("where")[0];
+			String afterWhereSql = originalSql.toLowerCase().split("where")[1];
+			StringBuilder beforeWhereSqlBuilder = new StringBuilder(beforeWhereSql);
+			beforeWhereSqlBuilder.append(", version = version + 1 where");
+			StringBuilder afterWhereSqlBuilder = new StringBuilder(afterWhereSql);
+			afterWhereSqlBuilder.append(" and ");
+			afterWhereSqlBuilder.append(versionColumn);
+			afterWhereSqlBuilder.append(" = ?");
+			beforeWhereSqlBuilder.append(afterWhereSqlBuilder);
+			hm.setValue("boundSql.sql", beforeWhereSqlBuilder.toString());
+			System.out.println("**********乐观锁Sql********** = [" + beforeWhereSqlBuilder.toString() + "]");
+			/**
+			 * new end
+			 */
 		} else if("setParameters".equals(interceptMethod)) {
 			
 			ParameterHandler handler = (ParameterHandler) PluginUtil.processTarget(invocation.getTarget());
@@ -153,14 +176,17 @@ public class OptimisticLocker implements Interceptor {
 
 	@Override
 	public Object plugin(Object target) {
-		if (target instanceof StatementHandler || target instanceof ParameterHandler)
-            return Plugin.wrap(target, this);
+		if (target instanceof StatementHandler || target instanceof ParameterHandler) {
+			return Plugin.wrap(target, this);
+		}
 		return target;
 	}
 
 	@Override
 	public void setProperties(Properties properties) {
-		if(null != properties && !properties.isEmpty()) props = properties;
+		if(null != properties && !properties.isEmpty()) {
+			props = properties;
+		}
 	}
 
 }

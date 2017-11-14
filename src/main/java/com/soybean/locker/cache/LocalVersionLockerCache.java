@@ -21,15 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mook.locker.cache;
+package com.soybean.locker.cache;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.soybean.locker.annotation.VersionLocker;
+import com.soybean.locker.util.Constent;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
-
-import com.mook.locker.annotation.VersionLocker;
-import com.mook.locker.util.Constent;
 
 public class LocalVersionLockerCache implements VersionLockerCache {
 	
